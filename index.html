@@ -25,55 +25,91 @@
 
     <div class="container-fluid">
 
-        <form ng-submit="submit()">
+        <div class="row">
+            <div class="col">
+                <h1>Add Event</h1>
 
-            <div class="form-group">
-                <label>Title</label>
-                <input class="form-control" type="text" ng-model="title">
+                <form ng-submit="submit()">
+                    <div class="form-group">
+                        <label>Title</label>
+                        <input class="form-control" type="text" ng-model="title">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Start Time</label>
+                        <input class="form-control" type="datetime-local" ng-model="startTime">
+                    </div>
+
+                    <div class="form-group">
+                        <label>End Time</label>
+                        <input class="form-control" type="datetime-local" ng-model="endTime">
+                    </div>
+
+                    <div class="form-check">
+                        <label class="form-check-label">
+                            <input class="form-check-input" type="checkbox" ng-model="allDay"> All Day
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Category</label>
+                        <input class="form-control" type="text" ng-model="category">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea class="form-control" rows="3" ng-model="description"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Location</label>
+                        <input class="form-control" type="text" ng-model="location">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Website</label>
+                        <input class="form-control" type="text" ng-model="website">
+                    </div>
+
+                    <button class="btn btn-primary" type="submit">Submit</button>
+                    <button class="btn btn-danger" type="reset">Reset</button>
+
+                </form>
             </div>
 
-            <div class="form-group">
-                <label>Start Time</label>
-                <input class="form-control" type="datetime-local" ng-model="startTime">
+            <div class="col">
+                <h1>Current Events</h1>
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Category</th>
+                            <th>Start Time</th>
+                            <th>End Time</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="event in events">
+                            <td>{{ event.title }}</th>
+                            <td>{{ event.category }}</td>
+                            <td>{{ event.startTime }}</td>
+                            <td>{{ event.endTime }}</td>
+                            <td>
+                                <button class="btn btn-danger" ng-click="remove(event)">Remove</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <!-- <ul>
+                    <li ng-repeat="event in events">
+                        {{ event.title }}
+                        <button class="btn btn-danger" ng-click="remove(event)">Remove</button>
+                    </li>
+                </ul> -->
             </div>
-
-            <div class="form-group">
-                <label>End Time</label>
-                <input class="form-control" type="datetime-local" ng-model="endTime">
-            </div>
-
-            <div class="form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" type="checkbox" ng-model="allDay">
-                    All Day
-                </label>
-            </div>
-
-            <div class="form-group">
-                <label>Category</label>
-                <input class="form-control" type="text" ng-model="category">
-            </div>
-
-            <div class="form-group">
-                <label>Description</label>
-                <textarea class="form-control" rows="3" ng-model="description"></textarea>
-            </div>
-
-            <div class="form-group">
-                <label>Location</label>
-                <input class="form-control" type="text" ng-model="location">
-            </div>
-
-            <div class="form-group">
-                <label>Website</label>
-                <input class="form-control" type="text" ng-model="website">
-            </div>
-
-            <button class="btn btn-primary" type="submit">Submit</button>
-            <button class="btn btn-danger" type="reset">Reset</button>
-
-        </form>
-
+        </div>
     </div>
 
     <script>
@@ -89,8 +125,20 @@
         angular.module('MainApp', ['firebase'])
             .controller('MainController', function ($scope, $firebaseArray) {
                 $scope.title = '';
-                $scope.startTime = '';
-                $scope.endTime = '';
+                $scope.startTime = new Date(
+                    new Date().getFullYear(),
+                    new Date().getMonth(),
+                    new Date().getDate(),
+                    new Date().getHours(),
+                    new Date().getMinutes(), 0, 0
+                );
+                $scope.endTime = new Date(
+                    new Date().getFullYear(),
+                    new Date().getMonth(),
+                    new Date().getDate(),
+                    new Date().getHours(),
+                    new Date().getMinutes(), 0, 0
+                );
                 $scope.allDay = false;
                 $scope.category = '';
                 $scope.description = '';
@@ -100,7 +148,7 @@
                 $scope.events = $firebaseArray(ref);
 
                 $scope.submit = function () {
-                    $scope.events.$add({
+                    var event = {
                         title: $scope.title,
                         startTime: new Date($scope.startTime).toString(),
                         endTime: new Date($scope.endTime).toString(),
@@ -109,9 +157,18 @@
                         description: $scope.description,
                         location: $scope.location,
                         website: $scope.website
-                    }).then(function (ref) {
+                    };
+                    console.log(event);
+                    $scope.events.$add(event).then(function (ref) {
                         var id = ref.key;
                         console.log('added record with id', id);
+                    });
+                };
+
+                $scope.remove = function (event) {
+                    $scope.events.$remove(event).then(function (ref) {
+                        var id = ref.key;
+                        console.log('removed record with id', id);
                     });
                 };
             });
